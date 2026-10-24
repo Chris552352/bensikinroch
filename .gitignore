@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+caisse_roch.json
+.venv/
+venv/
