@@ -76,7 +76,7 @@ def echelle_z(z, mini=0.16, maxi=0.62):
 
 
 def blit_pied(surf, sprite, x, y, scale):
-    scale = max(0.10, min(0.78, scale))
+    scale = max(0.10, min(1.05, scale * 1.35))
     w = max(8, int(sprite.get_width() * scale))
     h = max(8, int(sprite.get_height() * scale))
     img = pygame.transform.smoothscale(sprite, (w, h))
@@ -98,7 +98,10 @@ def route_pseudo3d(surf, joueur_x, distance, courbure, niveau, t):
     horizon = int(C.HAUTEUR * 0.36)
     ciel = couleur_ciel(niveau, t)
     surf.fill(ciel)
-    pygame.draw.rect(surf, ciel, (0, 0, C.LARGEUR, horizon + 8))
+    for y in range(horizon + 8):
+        lumiere = y / (horizon + 8)
+        col = tuple(int(lerp(c * .72, min(255, c + 22), lumiere)) for c in ciel)
+        pygame.draw.line(surf, col, (0, y), (C.LARGEUR, y))
     soleil_ou_lune(surf, niveau, t)
 
     meteo = niveau.get("meteo", "soleil")
@@ -186,6 +189,7 @@ def moto_roch(surf, x, y, inclinaison, phare, casque_passager, nuit):
         surf.blit(halo, (x - 110, y + 36))
     elif nuit:
         pygame.draw.ellipse(corps, (80, 80, 70), (64, 104, 22, 12))
+    corps = pygame.transform.smoothscale(corps, (195, 221))
     rot = pygame.transform.rotate(corps, -lean)
     surf.blit(rot, rot.get_rect(center=(int(x), int(y))))
 
@@ -320,11 +324,35 @@ def dessiner_mobile(surf, atlas: Atlas, mobile, joueur_x, courbure, distance, t=
 
 
 def carte(surf, titre, x, y, w, h, accent=C.JAUNE, fonts=None):
-    pygame.draw.rect(surf, (10, 18, 16), (x, y, w, h), border_radius=14)
-    pygame.draw.rect(surf, accent, (x, y, w, h), 2, border_radius=14)
-    pygame.draw.rect(surf, C.VERT, (x, y, 8, h), border_radius=4)
-    font = fonts["titre"] if fonts else pygame.font.SysFont("georgia", 20, bold=True)
-    surf.blit(font.render(titre, True, accent), (x + 20, y + 10))
+    panneau(surf, (x, y, w, h), accent)
+    font = fonts["titre"] if fonts else pygame.font.SysFont("dejavusans", 19, bold=True)
+    surf.blit(font.render(titre, True, accent), (x + 20, y + 14))
+
+
+def panneau(surf, rect, accent=(66, 105, 88), actif=False):
+    r = pygame.Rect(rect)
+    pygame.draw.rect(surf, (4, 10, 9), r.move(0, 6), border_radius=16)
+    pygame.draw.rect(surf, (24, 53, 43) if actif else (13, 31, 27), r, border_radius=16)
+    pygame.draw.rect(surf, accent, r, 2 if actif else 1, border_radius=16)
+    pygame.draw.rect(surf, accent, (r.x + 1, r.y + 17, 4, r.h - 34), border_radius=2)
+
+
+def texte_bloc(surf, font, msg, rect, col=C.CREME):
+    r = pygame.Rect(rect)
+    mots = str(msg).split()
+    ligne = ""
+    y = r.y
+    for mot in mots + [None]:
+        candidat = f"{ligne} {mot}".strip() if mot else ""
+        if ligne and (mot is None or font.size(candidat)[0] > r.w):
+            if y + font.get_height() > r.bottom:
+                break
+            surf.blit(font.render(ligne, True, col), (r.x, y))
+            y += font.get_linesize() + 2
+            ligne = mot or ""
+        else:
+            ligne = candidat
+    return y
 
 
 def texte_ombre(surf, font, msg, pos, col=C.BLANC, ombre=C.NOIR):

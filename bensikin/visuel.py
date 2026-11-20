@@ -55,7 +55,7 @@ def panneau_danger(ligne1: str, ligne2: str = ""):
     pygame.draw.polygon(s, (20, 20, 20), [(62, 6), (116, 98), (8, 98)])
     pygame.draw.polygon(s, C.ROUGE, [(60, 8), (112, 96), (8, 96)])
     pygame.draw.polygon(s, C.JAUNE, [(60, 22), (98, 88), (22, 88)])
-    font = _police(11)
+    font = _police(14)
     _centre_texte(s, font, ligne1, (20, 20, 20), 62 if not ligne2 else 54)
     if ligne2:
         _centre_texte(s, font, ligne2, (20, 20, 20), 74)
@@ -90,7 +90,7 @@ def panneau_direction(gauche: str, droite: str):
     s = _surf(150, 120)
     pygame.draw.rect(s, (70, 70, 74), (70, 58, 10, 60))
     pygame.draw.rect(s, (18, 90, 55), (8, 8, 134, 52), border_radius=4)
-    font = _police(11)
+    font = _police(14)
     s.blit(font.render(f"← {gauche[:10]}", True, C.BLANC), (14, 14))
     s.blit(font.render(f"{droite[:10]} →", True, C.BLANC), (14, 34))
     return s
